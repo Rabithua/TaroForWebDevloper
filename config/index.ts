@@ -16,7 +16,9 @@ export default defineConfig<'vite'>(async (merge, { command: _command, mode: _mo
   const baseConfig: UserConfigExport<'vite'> = {
     projectName: 'taroTw',
     date: '2025-12-29',
-    designWidth: 750,
+    // Tailwind's spacing and arbitrary values use CSS pixels on a 375px canvas.
+    // Keep Taro's px -> rpx transform on the same baseline (10px -> 20rpx).
+    designWidth: 375,
     deviceRatio: {
       640: 2.34 / 2,
       750: 1,
