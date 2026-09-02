@@ -1,6 +1,6 @@
 {
   "extends": ["taro/react"],
-  "ignorePatterns": ["babel.config.js", "postcss.config.js"],
+  "ignorePatterns": ["babel.config.js", "postcss.config.js", "dist", "pocketbase"],
   "rules": {
     "react/jsx-uses-react": "off",
     "react/react-in-jsx-scope": "off",

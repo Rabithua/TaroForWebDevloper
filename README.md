@@ -26,8 +26,8 @@ A multi-platform development template based on Taro 4.x, Tailwind CSS 4.x, and R
 
 ### Icon Solution
 
-- **Lucide** - Icon library
-- **Icon Component** - Wrapped icon component with SVG to Base64 conversion
+- **Lucide IconNode** - Tree-shakeable semantic icon data
+- **Icon Component** - UTF-8-safe SVG serialization to a cached Base64 data URI rendered by Taro `Image`
 
 ### Backend Service
 
@@ -115,7 +115,10 @@ src/
   ├── app.config.ts        # Application config
   ├── app.css              # Global styles (imports Tailwind CSS)
   ├── components/          # Shared components
-  │   └── Icon.tsx         # Icon component
+  │   ├── Icon.tsx         # Icon component
+  │   └── icon-svg.ts      # Pure IconNode serializer and data URI cache
+  ├── dev/                 # Unrouted development-only UI kit previews
+  │   └── IconGallery.tsx
   ├── pages/               # Pages directory
   │   └── index/
   │       ├── index.tsx
@@ -139,6 +142,10 @@ pocketbase/                 # PocketBase backend service
   ├── docker-compose.yml  # Docker Compose configuration
   ├── Dockerfile          # Docker image build
   └── pb_migrations/      # Database migration files
+
+tests/                      # Bun unit tests
+  ├── Icon.test.tsx
+  └── icon-svg.test.ts
 ```
 
 ## Usage Guide
@@ -182,22 +189,56 @@ For more Redux Toolkit usage instructions, see [doc/REDUX_TOOLKIT.md](./doc/REDU
 
 ### Using Icon Component
 
-Use icons from the Lucide icon library:
+Import an `IconNode` from `lucide`, then render it exclusively through the template component:
 
 ```tsx
 import { Icon } from '../../components/Icon'
-import { Home } from 'lucide'
+import { House } from 'lucide'
 
 export default function Index() {
   return (
     <View>
-      <Icon icon={Home} size={48} color="#333" />
+      <Icon
+        icon={House}
+        size={24}
+        color="#171717"
+        strokeWidth={2}
+        className="shrink-0"
+        aria-label="Home"
+      />
     </View>
   )
 }
 ```
 
-**Note**: Prefer using the Icon component instead of images for icons.
+The public API is:
+
+```ts
+interface IconProps {
+  icon: IconNode
+  size?: number // CSS pixels on both WeChat Mini Program and H5; default 24
+  color?: string // Concrete SVG color; default #0a0a0a
+  strokeWidth?: number // Default 2; zero is supported
+  className?: string
+  'aria-label'?: string
+  ariaLabel?: string // Taro-compatible alias
+}
+```
+
+Important constraints:
+
+- `lucide` exports icon data in this template. Never render it as `<House />`, and do not render a `lucide-react` SVG component in Mini Program business code. WeChat Mini Program does not provide the DOM SVG path that React icon packages expect. `<Icon icon={House} />` serializes the node to a UTF-8-safe Base64 data URI and renders it through Taro `Image` on every platform.
+- Pass a concrete color such as `#171717` or `rgba(...)`. `currentColor`, `inherit`, CSS variables, and paint-server URLs cannot cross the independent image boundary and are rejected. Resolve light/dark theme colors before passing `color`.
+- `size` controls both rendered width and height in CSS pixels. The component uses `aspectFit`, a non-shrinking inline size, and a matching SVG viewport to prevent intrinsic SVG dimensions from changing the layout.
+- Use `className` for layout placement, not to override the icon's width, height, or stroke color. Use `size`, `color`, and `strokeWidth` for those properties.
+- A standalone meaningful icon should have `aria-label`. An icon next to visible text, or inside an already labelled button, should omit it and remain decorative. On H5 the label is forwarded to the inner image; Taro also receives its `ariaLabel` form.
+- Do not use text characters or emoji as icon placeholders. Choose a semantic Lucide node so the same glyph renders consistently across fonts and platforms.
+
+#### Lucide vs. design-specific SVG assets
+
+Use `Icon` for common semantic actions and states: navigation, search, settings, back, share, location, calendar, profile, loading controls, and similar UI concepts. Use the exact exported design asset through Taro `Image` for brand marks, logos, illustrations, campaign artwork, or a bespoke glyph whose geometry is part of the design. Do not approximate a design-specific asset with a vaguely similar Lucide icon, and do not place exported artwork inside the semantic `Icon` API.
+
+A development-only gallery is available at `src/dev/IconGallery.tsx`. It is intentionally not imported by `src/app.config.ts`, so it never becomes a production route. Temporarily render it from a local development page when reviewing a new platform, theme palette, or Lucide upgrade.
 
 ### Code Standards
 
@@ -216,6 +257,14 @@ bun run format
 
 # Check code format
 bun run format:check
+
+# Lint, typecheck, and unit tests
+bun run lint
+bun run typecheck
+bun run test
+
+# Run all non-build checks
+bun run check
 ```
 
 ## Notes
@@ -226,7 +275,7 @@ bun run format:check
 - Avoid using `rpx` units unless necessary
 - Avoid abusing `ScrollView` unless necessary
 - Use Redux Toolkit for state management
-- Use Icon component instead of images for icons
+- Use the Icon component for semantic icons; use exact exported image assets for bespoke design artwork
 - Documentation files should be placed in the `doc` folder
 
 ## Development Guidelines

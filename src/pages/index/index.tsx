@@ -1,8 +1,10 @@
 import { View, Button } from '@tarojs/components'
 import { useLoad } from '@tarojs/taro'
+import { Moon, Sun } from 'lucide'
 import { useAppDispatch } from '@/store/hooks'
 import { setTheme } from '@/store/slices/appSlice'
 import { useThemeViewProps } from '@/hooks/useTheme'
+import { Icon } from '@/components/Icon'
 import PageContainer from '@/components/PageContainer'
 
 export default function Index() {
@@ -41,7 +43,14 @@ export default function Index() {
         <View className="flex flex-col space-y-1 text-sm bg-muted p-3 rounded-lg">
           <View className="flex justify-between">
             <View className="opacity-60">Current Theme:</View>
-            <View className="font-mono">{theme === 'dark' ? '🌙 Dark' : '☀️ Light'}</View>
+            <View className="font-mono flex items-center gap-2">
+              <Icon
+                icon={theme === 'dark' ? Moon : Sun}
+                size={16}
+                color={theme === 'dark' ? '#fafafa' : '#0a0a0a'}
+              />
+              <View>{theme === 'dark' ? 'Dark' : 'Light'}</View>
+            </View>
           </View>
           <View className="flex justify-between">
             <View className="opacity-60">Platform:</View>

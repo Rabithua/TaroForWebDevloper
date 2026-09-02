@@ -52,24 +52,24 @@ docker exec -it pocketbase sh
 migrate(
   (db) => {
     // 执行迁移（创建/修改结构）
-    const dao = new Dao(db);
+    const dao = new Dao(db)
     const collection = new Collection({
-      id: "collection_id",
-      name: "collection_name",
-      type: "base",
+      id: 'collection_id',
+      name: 'collection_name',
+      type: 'base',
       schema: [
         // 字段定义
       ],
-    });
-    return dao.saveCollection(collection);
+    })
+    return dao.saveCollection(collection)
   },
   (db) => {
     // 回滚逻辑（可选）
-    const dao = new Dao(db);
-    const collection = dao.findCollectionByNameOrId("collection_id");
-    return dao.deleteCollection(collection);
+    const dao = new Dao(db)
+    const collection = dao.findCollectionByNameOrId('collection_id')
+    return dao.deleteCollection(collection)
   }
-);
+)
 ```
 
 ## 执行顺序
